@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "outDir": "build-server",
+    "lib": ["es6", "dom", "esnext.asynciterable"]
+  },
+  "include": [
+    "./src/common/**/*",
+    "./src/server/**/*",
+    "./src/db/*.ts"
+  ]
+}

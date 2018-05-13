@@ -1,0 +1,16 @@
+scalar DateTime
+scalar Uuid
+
+schema {
+    query: Query
+    mutation: Mutation
+}
+
+type Query {
+    name: String
+}
+
+type Mutation {
+    name(whatever: String): String
+    totoro(qwre: Float): Int
+}

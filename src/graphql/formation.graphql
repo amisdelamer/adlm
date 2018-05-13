@@ -1,0 +1,34 @@
+# type Season {
+#   id: ID!
+# }
+
+# type Formation {
+#   id: ID!
+#   season: ID!
+#   name: String!
+#   managerId: ID!
+#   levelId: ID
+# }
+
+# type FormationGroup {
+#   id: ID!
+#   formationId: ID!
+#   color: String!
+#   colorHex: String!
+#   managerId: ID!
+# }
+
+# type FormationMember {
+#   userId: ID!
+#   formationGroupId: ID!
+#   isTeacher: Boolean!
+# }
+
+type FormationNote {
+  id: ID!
+  userId: ID!
+  formationId: ID!
+  creatorId: ID!
+  createdAt: DateTime!
+  value: String!
+}

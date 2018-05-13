@@ -1,0 +1,18 @@
+# enum GroupStatus {
+#     PUBLIC
+#     PROTECTED
+#     PRIVATE
+# }
+
+# type Group {
+#   id: ID!
+#   creatorId: ID!
+#   name: String!
+#   status: GroupStatus!
+# }
+
+type GroupMember {
+  userId: ID!
+  groupId: ID!
+  isAdmin: Boolean!
+}

@@ -1,0 +1,70 @@
+type Level {
+  id: ID!
+  name: String!
+  shortname: String!
+  supervisedDepth: Int!
+  independentDepth: Int!
+  description: String!
+}
+
+type DivingSpot {
+  id: ID!
+  description: String!
+  location: Location!
+}
+
+enum DivingSessionKind {
+    BEACH
+    BOAT
+}
+
+type DivingSessionDirectorExternal {
+  name: String!
+}
+
+union DivingSessionDirector = User | DivingSessionDirectorExternal
+
+type DivingSession {
+  id: ID!
+  spot: DivingSpot!
+  director: DivingSessionDirector!
+  at: DateTime!
+  price: Float!
+  kind: DivingSessionKind!
+}
+
+type DecompressionStop {
+  depth: Int!
+  time: Int!
+}
+
+enum DivingTeamKind {
+    EXPLORATION
+    FORMATION
+}
+
+type DivingTeam {
+  id: ID!
+  session: DivingSession!
+  kind: DivingTeamKind!
+  maxTime: Int!
+  maxDepth: Int!
+  startedAt: DateTime
+  endedAt: DateTime
+  measuredTime: Int
+  measuredMaxDepth: Int
+  stops: [DecompressionStop!]!
+  notes: String
+}
+
+enum DiverStatus {
+    LEADER
+    MEMBER
+    FOLLOWER
+}
+
+type Diver {
+  userId: ID!
+  teamId: ID!
+  status: DiverStatus!
+}

@@ -1,0 +1,89 @@
+type Location {
+  id: ID!
+  name: String!
+  address: String!
+  longitude: Float!
+  latitude: Float!
+}
+
+type File {
+  id: ID!
+  creator: User!
+  createdAt: DateTime!
+  name: String!
+  path: String!
+  kind: String!
+  size: Int!
+}
+
+interface Bill {
+  id: ID!
+  creator: User!
+  createdAt: DateTime!
+  target: User!
+  amount: Float!
+  note: String
+}
+
+type BasicBill implements Bill {
+  id: ID!
+  creator: User!
+  createdAt: DateTime!
+  target: User!
+  amount: Float!
+  note: String
+}
+
+# type EventBill implements Bill {
+#   id: ID!
+#   creator: User!
+#   createdAt: DateTime!
+#   target: User!
+#   amount: Float!
+#   note: String
+#   event: Event
+# }
+
+# type ActivityBill implements Bill {
+#   id: ID!
+#   creator: User!
+#   createdAt: DateTime!
+#   target: User!
+#   amount: Float!
+#   note: String
+#   activity: Activity
+# }
+
+type DivingBill implements Bill {
+  id: ID!
+  creator: User!
+  createdAt: DateTime!
+  target: User!
+  amount: Float!
+  note: String
+  divingSession: DivingSession
+}
+
+
+type Settings {
+  googleMapsApiKey: String!
+  levelN1: Level!
+  levelN2: Level!
+  levelN3: Level!
+  levelN4: Level!
+  levelN5: Level!
+  levelRifap: Level!
+  levelNitroxSimple: Level!
+  levelNitroxComplex: Level!
+  levelInit: Level!
+  levelMF1: Level!
+  levelMF2: Level!
+  levelBio1: Level!
+  levelBio2: Level!
+}
+
+extend type Query {
+  settings: Settings!
+  locations: [Location!]!
+  files: [File!]!
+}

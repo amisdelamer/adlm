@@ -1,0 +1,46 @@
+# type Event {
+#   id: ID!
+#   creatorId: ID!
+#   createdAt: DateTime!
+#   from: DateTime!
+#   to: DateTime!
+#   chargedAt: DateTime
+#   withCarpooling: Boolean!
+# }
+
+# type EventMember {
+#   userId: ID!
+#   eventId: ID!
+#   vehiculeId: ID
+#   notes: String
+# }
+
+# type Activity {
+#   id: ID!
+#   eventId: ID!
+#   at: DateTime!
+#   price: Float!
+#   description: String!
+#   cancelled: Boolean!
+# }
+
+# type ActivityOptout {
+#   userId: ID!
+#   activityId: ID!
+# }
+
+# type Task {
+#   id: ID!
+#   name: String!
+#   at: DateTime!
+#   description: String!
+#   locationId: ID
+#   needsDriver: Boolean!
+#   peopleNeededMin: Int!
+#   peopleNeededMax: Int!
+# }
+
+type UserTask {
+  userId: ID!
+  taskId: ID!
+}
