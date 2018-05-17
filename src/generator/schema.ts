@@ -1,14 +1,18 @@
-const fs = require('fs');
-const path = require('path');
-const ts = require('typescript');
+import fs from 'fs';
+import path from 'path';
+import ts from 'typescript';
 
-const schemaPath = path.resolve(process.cwd(), 'src', 'graphql', 'schema.ts');
+const cwd = process.cwd();
+const tsServerConfig = require(path.resolve(cwd, 'tsconfig.server.json'));
+const buildPath = path.resolve(cwd, tsServerConfig.compilerOptions.outDir);
+const buildGraphqlPath = path.join(buildPath, 'graphql');
+const graphqlPath = path.resolve(process.cwd(), 'src', 'graphql');
 
 function compile(from: string, to: string) {
-  const schemaSource = fs.readFileSync(from, { encoding: 'utf8' });
+  const source = fs.readFileSync(from, { encoding: 'utf8' });
 
   // Replace .graphql imports by their real string value
-  const tsSchemaSource = schemaSource.replace(
+  const tsSource = source.replace(
     /import ([a-zA-Z]+) from '([a-zA-Z\/~]+\.graphql)';/g,
     function(match: string, name: string, filePath: string) {
       return `const ${name} = \`${require(filePath)}\``;
@@ -16,7 +20,7 @@ function compile(from: string, to: string) {
   );
 
   // Compile to JavaScript
-  const jsSchemaSource = ts.transpileModule(tsSchemaSource, {
+  const jsSource = ts.transpileModule(tsSource, {
     compilerOptions: {
       target: ts.ScriptTarget.ES5,
       module: ts.ModuleKind.CommonJS,
@@ -37,9 +41,25 @@ function compile(from: string, to: string) {
   });
 
   // Output file
-  fs.writeFileSync(to, '// @generated\n' + jsSchemaSource.outputText);
+  fs.writeFileSync(to, '// @generated\n' + jsSource.outputText);
+}
+
+function createDir(dirPath: string) {
+  try {
+    fs.mkdirSync(dirPath);
+  } catch (e) {}
 }
 
 export default function generateSchema(fileName: string) {
-  compile(schemaPath, fileName);
+  createDir(buildPath);
+  createDir(buildGraphqlPath);
+  fs
+    .readdirSync(graphqlPath)
+    .filter((f) => f.endsWith('.ts'))
+    .forEach((f) => {
+      compile(
+        path.resolve(graphqlPath, f),
+        path.resolve(buildGraphqlPath, f.replace('.ts', '.js'))
+      );
+    });
 }

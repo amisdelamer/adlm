@@ -1,5 +1,5 @@
-import path from 'path';
 import fs from 'fs';
+import path from 'path';
 import { printSchema } from 'graphql';
 import { generate } from 'graphql-code-generator';
 import schema from './schema';

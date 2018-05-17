@@ -29,11 +29,11 @@
     "client": "react-app-rewired start",
     "server": "concurrently \"yarn server:build --watch\" \"yarn server:start\"",
     "server:build": "tsc --project ./tsconfig.server.json",
-    "server:start": "nodemon -r ./require.js ./build-server/server/index.js --watch src --watch build-server --ext js,graphql",
-    "generate": "node -r ./require.js -r dotenv/config -r ts-node/register ./src/generator/index.ts",
-    "db:dump": "node -r dotenv/config -r ts-node/register ./src/generator/dump_schema.ts",
+    "server:start": "nodemon -r ./require.js -r dotenv/config ./build-server/server/index.js --watch src --watch build-server --ext js,graphql",
+    "generate": "ts-node -r ./require.js -r dotenv/config -r --project ./tsconfig.server.json ./src/generator/index.ts",
+    "db:dump": "ts-node -r dotenv/config -r --project ./tsconfig.server.json ./src/generator/dump_schema.ts",
     "db:seed": "knex seed:run",
-    "db:import": "node -r ./require.js -r ts-node/register ./src/generator/import_db.ts"
+    "db:import": "ts-node -r ./require.js -r --project ./tsconfig.server.json ./src/generator/import_db.ts"
   },
   "prettier": {
     "singleQuote": true,

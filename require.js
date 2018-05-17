@@ -1,8 +1,8 @@
 // During Node bootstrap,
 // will replace TypeScript baseUrl paths starting with ~
 // by a valid relative path
-const path = require('path');
 const fs = require('fs');
+const path = require('path');
 
 (function() {
   const tsConfig = require('./tsconfig.json');
@@ -24,9 +24,14 @@ const fs = require('fs');
   }
 
   moduleProto.require = function(name) {
+    if (!name) {
+      return '';
+    }
+
     const isGraphQl = name.endsWith('.graphql');
+    const isOriginal = isGraphQl || name.endsWith('.json');
     if (name[0] === '~') {
-      name = rewriteName(name.slice(2), isGraphQl);
+      name = rewriteName(name.slice(2), isOriginal);
     }
 
     if (isGraphQl) {

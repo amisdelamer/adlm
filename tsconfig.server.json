@@ -7,6 +7,7 @@
   },
   "include": [
     "./src/common/**/*",
+    "./src/graphql/**/*",
     "./src/server/**/*",
     "./src/db/*.ts"
   ]
