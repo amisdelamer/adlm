@@ -111,7 +111,11 @@ type Column = {
   position: CardinalNumber;
 };
 
-type Tables = { [tableName: string]: Array<Column> };
+type Table = {
+  name: string;
+  columns: Array<Column>;
+  primaryKey: Array<Column>;
+};
 
 type Enum = { name: string; values: Array<string> };
 
@@ -134,12 +138,10 @@ export default function generateDbTypes() {
       }));
     })
     .then(({ tables, enums, mappings }) => {
-      const files = Object.keys(tables)
-        .filter((k) => !isEnumTable(tables[k]))
-        .map((k) => ({
-          file: `dao/${k}Dao.ts`,
-          content: generateDao(k, tables[k]),
-        }));
+      const files = tables.filter((t) => !isEnumTable(t.columns)).map((t) => ({
+        file: `dao/${t.name}Dao.ts`,
+        content: generateDao(t, mappings),
+      }));
 
       files.push({
         file: 'types.db.ts',
@@ -194,17 +196,51 @@ function getTables(knex: Knex) {
         position: row.ordinal_position,
       });
       return tables;
-    }, {});
+    }, {})
+    .then((obj) => {
+      const tables: Array<Table> = Object.keys(obj).map((name) => ({
+        name: name,
+        columns: obj[name],
+        primaryKey: [],
+      }));
+      return tables;
+    })
+    .then((tables) => {
+      return Promise.all(
+        tables.map((table) => {
+          return getPrimaryKeys(knex, table.name).then((pk) => {
+            const rows: Array<{ attname: string }> = pk.rows;
+            const columns: Array<Column> = table.columns;
+            table.primaryKey = columns.filter(
+              (c) => rows.findIndex((r) => r.attname === c.name) >= 0
+            );
+            return table;
+          });
+        })
+      );
+    });
 }
 
-function getEnums(knex: Knex, tables: Tables) {
+function getPrimaryKeys(knex: Knex, tableName: string) {
+  return knex.raw(
+    `
+SELECT a.attname, format_type(a.atttypid, a.atttypmod) AS data_type
+FROM   pg_index i
+JOIN   pg_attribute a ON a.attrelid = i.indrelid
+                      AND a.attnum = ANY(i.indkey)
+WHERE  i.indrelid = '"${tableName}"'::regclass
+AND    i.indisprimary;`
+  );
+}
+
+function getEnums(knex: Knex, tables: Array<Table>) {
   const enums: Array<string> = [];
 
-  for (let tableName in tables) {
-    if (isEnumTable(tables[tableName])) {
-      enums.push(tableName);
+  tables.forEach((table) => {
+    if (isEnumTable(table.columns)) {
+      enums.push(table.name);
     }
-  }
+  });
 
   return Promise.all(
     enums.map((enumTable) => {
@@ -268,33 +304,27 @@ function generateEnum(e: Enum): string {
 }`;
 }
 
-function generateTables(tables: Tables, mappings: Mappings) {
+function generateTables(tables: Array<Table>, mappings: Mappings) {
   let res = '';
-  Object.keys(tables)
-    .sort()
-    .forEach((tableName) => {
-      res += generateTable(tableName, tables[tableName], mappings);
-      res += '\n\n';
-    });
+  tables.sort((t1, t2) => t1.name.localeCompare(t2.name)).forEach((table) => {
+    res += generateTable(table, mappings);
+    res += '\n\n';
+  });
   return res;
 }
 
-function generateTable(
-  name: string,
-  columns: Array<Column>,
-  mappings: Mappings
-): string {
+function generateTable(table: Table, mappings: Mappings): string {
   return `
-export interface ${getTableName(name)} {
-  ${columns
+export interface ${getTableType(table.name)} {
+  ${table.columns
     .sort(comparePosition)
-    .map((c) => `${c.name}: ${toTypeScriptType(name, c, mappings)};`)
+    .map((c) => `${c.name}: ${toTypeScriptType(table.name, c, mappings)};`)
     .join('\n  ')}
 }
   `.trim();
 }
 
-function getTableName(name: string): string {
+function getTableType(name: string): string {
   return `${name}Table`;
 }
 
@@ -383,7 +413,7 @@ function toTypeScriptType(
 }
 
 function generateTypes(props: {
-  tables: Tables;
+  tables: Array<Table>;
   enums: Array<Enum>;
   mappings: Mappings;
 }): string {
@@ -401,12 +431,22 @@ ${generateTables(props.tables, props.mappings)}`;
 function generateKnex(): string {
   return `// @generated
 // import Bluebird from 'bluebird';
-import Knex, {QueryBuilder} from 'knex';
+import Knex, { QueryBuilder } from 'knex';
 
 // export type Result<T> = QueryBuilder & Bluebird<T>;
 export type Result<T> = Promise<T>;
 
-export type Operator = '>' | '<' | '>=' | '<=' | '=' | '<>' | 'like' | 'not like' | 'similar to' | 'not similar to';
+export type Operator =
+  | '>'
+  | '<'
+  | '>='
+  | '<='
+  | '='
+  | '<>'
+  | 'like'
+  | 'not like'
+  | 'similar to'
+  | 'not similar to';
 
 const knex = Knex({
   client: 'pg',
@@ -422,61 +462,85 @@ export default knex;
 `;
 }
 
-function generateDao(tableName: string, colums: Array<Column>): string {
-  const typ = getTableName(tableName);
+function generateDao(table: Table, mappings: Mappings): string {
+  const typ = getTableType(table.name);
+  const pk =
+    table.primaryKey.length === 1
+      ? toTypeScriptType(table.name, table.primaryKey[0], mappings)
+      : `{${table.primaryKey
+          .map((p) => `${p.name}: ${toTypeScriptType(table.name, p, mappings)}`)
+          .join(', ')}}`;
+  const whereId = table.primaryKey.length === 1 ? `'id', id` : 'id';
 
   return `// @generated
 import knex, {Operator, Result} from '~/db/knex';
 import {${typ}} from '~/db/types.db';
 import {Uuid} from '~/common/uuid';
 
+export type Id = ${pk};
+
 export function all(): Result<Array<${typ}>> {
-  return Promise.resolve(knex.select().from('${tableName}'));
+  return Promise.resolve(knex.select().from('${table.name}'));
 }
 
-export function byId(id: Uuid): Result<${typ} | null> {
-  return Promise.resolve(knex('${tableName}').where('id', id)).then(rows => {
+export function byId(id: Id): Result<${typ} | null> {
+  return Promise.resolve(knex('${table.name}').where(${whereId})).then(rows => {
     if (rows.length === 0) {
       return null;
     } else if (rows.length === 1) {
       return rows[0];
     } else {
-      throw new Error('${tableName}Dao.byId returned ' + rows.length + ' results.');
+      throw new Error('${
+        table.name
+      }Dao.byId returned ' + rows.length + ' results.');
     }
   });
 }
 
+// This function should be called when looking for a value
+// from another row and using a foreign key.
+// It will fail if nothing is found.
+export function byIdRequired(id: Id): Result<${typ}> {
+  return byId(id).then(value => {
+    if (value == null) {
+      throw new Error('${
+        table.name
+      }Dao.byIdRequired returned null while looking for id ' + id);
+    }
+    return value;
+  });
+}
+
 export function where(predicate: Partial<${typ}>): Result<Array<${typ}>> {
-  return Promise.resolve(knex('${tableName}').where(predicate));
+  return Promise.resolve(knex('${table.name}').where(predicate));
 }
 
 export function whereOp(key: keyof ${typ}, op: Operator, value: any): Result<Array<${typ}>> {
-  return Promise.resolve(knex('${tableName}').where(key, op, value));
+  return Promise.resolve(knex('${table.name}').where(key, op, value));
 }
 
 export function insert(value: ${typ}): Result<${typ} | null> {
-  return Promise.resolve(knex('${tableName}').returning('*').insert(value));
+  return Promise.resolve(knex('${table.name}').returning('*').insert(value));
 }
 
 export function insertAll(value: Array<${typ}>): Result<${typ} | null> {
-  return Promise.resolve(knex('${tableName}').returning('*').insert(value));
+  return Promise.resolve(knex('${table.name}').returning('*').insert(value));
 }
 
-export function update(id: Uuid, patch: Partial<${typ}>): Result<${typ} | null> {
-  if (patch.id != null && patch.id !== id) {
-    console.warn('You must not try to update the id of an item. ${tableName}.id: ' + id + ' => ' + patch.id);
-    patch.id = id;
-  }
-  return Promise.resolve(knex('${tableName}').where('id', id).returning('*').update(patch));
+export function update(id: Id, patch: Partial<${typ}>): Result<${typ} | null> {
+  return Promise.resolve(knex('${
+    table.name
+  }').where(${whereId}).returning('*').update(patch));
 }
 
-export function remove(id: Uuid): Result<void> {
-  return Promise.resolve(knex('${tableName}').where('id', id).del());
+export function remove(id: Id): Result<void> {
+  return Promise.resolve(knex('${table.name}').where(${whereId}).del());
 }
 
 const dao = {
   all,
   byId,
+  byIdRequired,
   where,
   whereOp,
   insert,

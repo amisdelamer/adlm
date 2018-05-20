@@ -25,14 +25,14 @@ interface Bill {
   note: String
 }
 
-type BasicBill implements Bill {
-  id: ID!
-  creator: User!
-  createdAt: DateTime!
-  target: User!
-  amount: Float!
-  note: String
-}
+# type BasicBill implements Bill {
+#   id: ID!
+#   creator: User!
+#   createdAt: DateTime!
+#   target: User!
+#   amount: Float!
+#   note: String
+# }
 
 # type EventBill implements Bill {
 #   id: ID!
@@ -54,15 +54,15 @@ type BasicBill implements Bill {
 #   activity: Activity
 # }
 
-type DivingBill implements Bill {
-  id: ID!
-  creator: User!
-  createdAt: DateTime!
-  target: User!
-  amount: Float!
-  note: String
-  divingSession: DivingSession
-}
+# type DivingBill implements Bill {
+#   id: ID!
+#   creator: User!
+#   createdAt: DateTime!
+#   target: User!
+#   amount: Float!
+#   note: String
+#   divingSession: DivingSession
+# }
 
 
 type Settings {

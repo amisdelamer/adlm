@@ -7,7 +7,7 @@ import {
 import { toComment } from './helpers/utils';
 import { renderEnum, renderUnion } from './helpers/enum';
 import { renderType, renderInterface } from './helpers/type';
-import { renderQuery, renderMutation } from './helpers/operation';
+import { renderResolvers } from './helpers/resolvers';
 
 export default function generateTypes(
   context: SchemaTemplateContext,
@@ -17,16 +17,12 @@ export default function generateTypes(
   // console.log(context);
   return [
     {
-      filename: 'types.ts',
+      filename: 'common/types.ts',
       content: renderSchema(context),
     },
     {
-      filename: 'Query.ts',
-      content: renderQuery(context),
-    },
-    {
-      filename: 'Mutation.ts',
-      content: renderMutation(context),
+      filename: 'graphql/Resolvers.ts',
+      content: renderResolvers(context),
     },
   ];
 }

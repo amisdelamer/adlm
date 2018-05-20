@@ -19,11 +19,10 @@
 .env.production.local
 
 # generated files
-/src/graphql/schema.graphql
-/src/graphql/schema.graphql.js
-/src/graphql/Resolvers.js
+/src/graphql/Resolvers.ts
 /src/common/types.ts
 /src/db/types.db.ts
+/src/db/knex.ts
 /src/db/dao
 /membre_adlm.json
 

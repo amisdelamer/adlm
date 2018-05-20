@@ -2,18 +2,12 @@ import fs from 'fs';
 import path from 'path';
 import ts from 'typescript';
 
-const cwd = process.cwd();
-const tsServerConfig = require(path.resolve(cwd, 'tsconfig.server.json'));
-const buildPath = path.resolve(cwd, tsServerConfig.compilerOptions.outDir);
-const buildGraphqlPath = path.join(buildPath, 'graphql');
-const graphqlPath = path.resolve(process.cwd(), 'src', 'graphql');
-
 function compile(from: string, to: string) {
   const source = fs.readFileSync(from, { encoding: 'utf8' });
 
   // Replace .graphql imports by their real string value
   const tsSource = source.replace(
-    /import ([a-zA-Z]+) from '([a-zA-Z\/~]+\.graphql)';/g,
+    /\nimport ([a-zA-Z]+) from '([a-zA-Z\/~]+\.graphql)';/g,
     function(match: string, name: string, filePath: string) {
       return `const ${name} = \`${require(filePath)}\``;
     }
@@ -44,22 +38,11 @@ function compile(from: string, to: string) {
   fs.writeFileSync(to, '// @generated\n' + jsSource.outputText);
 }
 
-function createDir(dirPath: string) {
-  try {
-    fs.mkdirSync(dirPath);
-  } catch (e) {}
-}
-
-export default function generateSchema(fileName: string) {
-  createDir(buildPath);
-  createDir(buildGraphqlPath);
+export default function generateSchema(from: string, to: string) {
   fs
-    .readdirSync(graphqlPath)
+    .readdirSync(from)
     .filter((f) => f.endsWith('.ts'))
     .forEach((f) => {
-      compile(
-        path.resolve(graphqlPath, f),
-        path.resolve(buildGraphqlPath, f.replace('.ts', '.js'))
-      );
+      compile(path.resolve(from, f), path.resolve(to, f.replace('.ts', '.js')));
     });
 }

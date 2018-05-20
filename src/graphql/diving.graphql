@@ -18,6 +18,7 @@ enum DivingSessionKind {
     BOAT
 }
 
+# @noTable
 type DivingSessionDirectorExternal {
   name: String!
 }
@@ -33,6 +34,7 @@ type DivingSession {
   kind: DivingSessionKind!
 }
 
+# @noTable
 type DecompressionStop {
   depth: Int!
   time: Int!

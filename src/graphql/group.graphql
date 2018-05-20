@@ -11,8 +11,8 @@
 #   status: GroupStatus!
 # }
 
-type GroupMember {
-  userId: ID!
-  groupId: ID!
-  isAdmin: Boolean!
-}
+# type GroupMember {
+#   userId: ID!
+#   groupId: ID!
+#   isAdmin: Boolean!
+# }

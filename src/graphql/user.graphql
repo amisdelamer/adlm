@@ -21,10 +21,10 @@ type User {
   medicalCertificate: File
   medicalCertificateExpiresAt: DateTime
   insurance: Insurance
-  inscuranceFile: File
+  insuranceFile: File
   parentalPermissionFile: File
 
-  levels: [AquiredLevel!]!
+  levels: [AcquiredLevel!]!
   contacts: [Contact!]!
   vehicles: [Vehicle!]!
 
@@ -35,7 +35,7 @@ type User {
   newEmailToken: String
 }
 
-type AquiredLevel {
+type AcquiredLevel {
   level: Level!
   obtainedAt: DateTime!
   tempFile: File

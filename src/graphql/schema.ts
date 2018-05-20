@@ -2,9 +2,6 @@ import fs from 'fs';
 import { makeExecutableSchema } from 'graphql-tools';
 import { GraphQLScalarType } from 'graphql';
 import { Kind } from 'graphql/language';
-import { DateTime } from 'luxon';
-
-import UserDao from '~/db/dao/UserDao';
 
 // Should be that but cannot make TS happy with it...
 // import Schema from '~/graphql/schema.graphql';
@@ -27,30 +24,14 @@ const Global = loadGraphQL(process.cwd() + '/src/graphql/global.graphql');
 const Group = loadGraphQL(process.cwd() + '/src/graphql/group.graphql');
 const User = loadGraphQL(process.cwd() + '/src/graphql/user.graphql');
 
-import scalars from '~/graphql/scalars';
-
-// The resolvers
-const resolvers = {
-  ...scalars,
-  Query: {
-    name() {
-      return `asd`;
-    },
-    users() {
-      return UserDao.all();
-    },
-  },
-  Mutation: {
-    login(username: string) {
-      return true;
-    },
-  },
-};
-
 // Put together a schema
 const schema = makeExecutableSchema({
   typeDefs: [Schema, Diving, Event, Formation, Group, User, Global],
-  resolvers,
+  allowUndefinedInResolve: false,
+  resolverValidationOptions: {
+    // We are adding the resolvers later on
+    requireResolversForResolveType: false,
+  },
 });
 
 export default schema;

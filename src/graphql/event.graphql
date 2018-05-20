@@ -40,7 +40,7 @@
 #   peopleNeededMax: Int!
 # }
 
-type UserTask {
-  userId: ID!
-  taskId: ID!
-}
+# type UserTask {
+#   userId: ID!
+#   taskId: ID!
+# }

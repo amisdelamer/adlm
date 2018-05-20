@@ -1,14 +1,15 @@
 import { Field, Argument } from 'graphql-codegen-core';
 import { toPrimitive, toComment } from './utils';
 
-function renderTypeName(props: {
+export function renderTypeName(props: {
   type: string;
   isArray: boolean;
   isRequired: boolean;
+  isNullableArray: boolean;
 }): string {
-  return `${toPrimitive(props.type)}${props.isArray ? '[]' : ''}${
-    props.isRequired ? '' : ' | null'
-  }`;
+  return `${props.isArray ? 'Array<' : ''}${toPrimitive(props.type)}${
+    props.isNullableArray ? ' | null' : ''
+  }${props.isArray ? '>' : ''}${props.isRequired ? '' : ' | null'}`;
 }
 
 function renderArguments(args: Argument[]): string {

@@ -24,11 +24,11 @@
 #   isTeacher: Boolean!
 # }
 
-type FormationNote {
-  id: ID!
-  userId: ID!
-  formationId: ID!
-  creatorId: ID!
-  createdAt: DateTime!
-  value: String!
-}
+# type FormationNote {
+#   id: ID!
+#   userId: ID!
+#   formationId: ID!
+#   creatorId: ID!
+#   createdAt: DateTime!
+#   value: String!
+# }
