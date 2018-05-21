@@ -7,6 +7,7 @@ import {
 import { pascalCase } from 'change-case';
 import { renderTypeName } from './field';
 import { toPrimitive } from './utils';
+import { Table } from '../db';
 
 type Method = {
   field: Field;
@@ -28,7 +29,7 @@ type Context = {
   tables: Array<string>;
 };
 
-function init(ctx: SchemaTemplateContext): Context {
+function init(ctx: SchemaTemplateContext, tables: Array<Table>): Context {
   let query: Type | null = null;
   let mutation: Type | null = null;
 
@@ -66,6 +67,7 @@ function init(ctx: SchemaTemplateContext): Context {
     if (withoutTable(ctx, t.name)) {
       context.commons.push(t.name);
     } else {
+      checkTypeTables(t, tables);
       context.tables.push(t.name);
     }
   });
@@ -136,18 +138,21 @@ ${ctx.queryTypes
 ${renderMethodsArgs(ctx.mutationMethods)}`;
 }
 
+function getTableName(t: Type | string): string {
+  return (typeof t === 'string' ? t : t.name) + 'Table';
+}
+
 function renderMethod(m: Method, parent?: Type): string {
-  const parentName = parent ? parent.name + 'Table' : 'Root';
+  const parentName = parent ? getTableName(parent) : 'Root';
   const field = {
     ...m.field,
-    type: `${m.field.type}${
+    type:
       m.noTable ||
       isPrimitive(m.field) ||
       m.field.isUnion ||
       m.field.isInputType
-        ? ''
-        : 'Table'
-    }`,
+        ? m.field.type
+        : getTableName(m.field.type),
   };
   const args = getArgsName(m, parent);
   const result = renderTypeName(field);
@@ -168,7 +173,7 @@ function renderUnionMember(ctx: Context, t: string): string {
   if (ctx.tables.indexOf(t) < 0) {
     return t;
   } else {
-    return t + 'Table';
+    return getTableName(t);
   }
 }
 
@@ -178,15 +183,18 @@ function renderUnion(ctx: Context, u: Union): string {
     .join(' | ')};`;
 }
 
-export function renderResolvers(context: SchemaTemplateContext): string {
-  const ctx = init(context);
+export function renderResolvers(
+  context: SchemaTemplateContext,
+  tables: Array<Table>
+): string {
+  const ctx = init(context, tables);
 
   return `// @generated
 import {Request} from 'express';
 import {GraphQLResolveInfo, GraphQLScalarType} from 'graphql';
 import {Uuid} from '~/common/uuid';
 import {${ctx.commons.join(', ')}} from '~/common/types';
-import {${ctx.tables.map((t) => t + 'Table').join(', ')}} from '~/db/types.db';
+import {${ctx.tables.map(getTableName).join(', ')}} from '~/db/types.db';
 
 export type Root = {};
 
@@ -225,4 +233,41 @@ export type Resolvers = Scalars & SubTypes & {
   Mutation: Mutation;
 };
 `.trim();
+}
+
+function checkTypeTables(typ: Type, tables: Array<Table>) {
+  const idx = tables.findIndex((tab) => typ.name === tab.name);
+  const table = tables[idx];
+  if (table == null) {
+    throw new Error(`Could not find table for ${typ.name}`);
+  }
+  checkTypeTable(typ, table);
+}
+
+function checkTypeTable(t: Type, table: Table) {
+  const errors = t.fields
+    .map((f) => {
+      if (!isPrimitive(f)) {
+        return;
+      }
+      const idx = table.columns.findIndex((c) => c.name === f.name);
+      const column = table.columns[idx];
+      if (column == null) {
+        return `Could not find a matching column for field ${t.name}.${f.name}`;
+      }
+      if (column.isNullable !== !f.isRequired) {
+        return `Both ${t.name}.${f.name} should be either nullable or not`;
+      }
+      if (column.type !== renderTypeName(f)) {
+        return `${t.name}.${f.name} type: ${column.type} <> ${renderTypeName(
+          f
+        )}`;
+      }
+      return;
+    })
+    .filter(Boolean);
+
+  if (errors.length > 0) {
+    throw new Error(errors.join('\n'));
+  }
 }

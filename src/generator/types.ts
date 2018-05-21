@@ -4,17 +4,19 @@ import {
   FileOutput,
   Scalar,
 } from 'graphql-codegen-core';
+import db from './db';
 import { toComment } from './helpers/utils';
 import { renderEnum, renderUnion } from './helpers/enum';
 import { renderType, renderInterface } from './helpers/type';
 import { renderResolvers } from './helpers/resolvers';
 
-export default function generateTypes(
+export default async function generateTypes(
   context: SchemaTemplateContext,
   document: Document,
   settings: any
-): FileOutput[] {
-  // console.log(context);
+): Promise<FileOutput[]> {
+  const tables = await db();
+
   return [
     {
       filename: 'common/types.ts',
@@ -22,25 +24,24 @@ export default function generateTypes(
     },
     {
       filename: 'graphql/Resolvers.ts',
-      content: renderResolvers(context),
+      content: renderResolvers(context, tables),
     },
   ];
 }
 
 const scalars = {
-  DateTime: `string`,
-  Uuid: `string`,
+  DateIso: '~/common/iso',
+  Uuid: '~/common/uuid',
 };
 
 function renderScalar(scalar: Scalar): string {
   return `${toComment(scalar.description)}
-export type ${scalar.name} = ${scalars[scalar.name] || 'any'};
+import { ${scalar.name} } from '${scalars[scalar.name]}';
 `.trim();
 }
 
 export function renderSchema(schema: SchemaTemplateContext): string {
   return `// @generated
-
 ${schema.scalars.map(renderScalar).join('\n\n')}
 
 ${schema.enums.map(renderEnum).join('\n\n')}

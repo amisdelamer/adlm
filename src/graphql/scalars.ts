@@ -1,19 +1,18 @@
 import { GraphQLScalarType } from 'graphql';
 import { Kind } from 'graphql/language';
-import { DateTime } from 'luxon';
 import { Scalars } from '~/graphql/Resolvers';
 
-// function parseDate(value: string): DateTime | null {
-//   const date = DateTime.fromISO(value);
+// function parseDate(value: string): DateIso | null {
+//   const date = DateIso.fromISO(value);
 //   if (!date.isValid) {
 //     throw new TypeError(date.invalidReason);
 //   }
 //   return date;
 // }
 
-const DateTimeScalar = new GraphQLScalarType({
-  name: 'DateTime',
-  description: 'DateTime custom scalar type',
+const DateIsoScalar = new GraphQLScalarType({
+  name: 'DateIso',
+  description: 'DateIso custom scalar type',
   serialize(value: string): string {
     return value;
   },
@@ -55,7 +54,7 @@ const UuidScalar = new GraphQLScalarType({
 });
 
 const scalars: Scalars = {
-  DateTime: DateTimeScalar,
+  DateIso: DateIsoScalar,
   Uuid: UuidScalar,
 };
 

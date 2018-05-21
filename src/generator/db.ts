@@ -8,18 +8,12 @@ type CharacterData = string;
 type YesNo = 'YES' | 'NO';
 
 type SchemaColumn = {
-  // Name of the database containing the table (always the current database)
-  table_catalog: SqlIdentifier;
-  // Name of the schema containing the table
-  table_schema: SqlIdentifier;
   // Name of the table
   table_name: SqlIdentifier;
   // Name of the column
   column_name: SqlIdentifier;
   // Ordinal position of the column within the table (count starts at 1)
   ordinal_position: CardinalNumber;
-  // Default expression of the column
-  column_default: CharacterData;
   // YES if the column is possibly nullable, NO if it is known not nullable. A not-null constraint is one way a column can be known not nullable, but there can be others.
   is_nullable: YesNo;
   // Data type of the column, if it is a built-in type
@@ -28,79 +22,8 @@ type SchemaColumn = {
   // If the column is based on a domain, this column refers to the type underlying the domain
   // (and the domain is identified in domain_name and associated columns).
   data_type: CharacterData;
-  // If data_type identifies a character or bit string type, the declared maximum length; null for all other data types or if no maximum length was declared.
-  character_maximum_length: CardinalNumber;
-  // If data_type identifies a character type, the maximum possible length in octets (bytes) of a datum; null for all other data types. The maximum octet length depends on the declared character maximum length (see above) and the server encoding.
-  character_octet_length: CardinalNumber;
-  // If data_type identifies a numeric type, this column contains the (declared or implicit) precision of the type for this column. The precision indicates the number of significant digits. It can be expressed in decimal (base 10) or binary (base 2) terms, as specified in the column numeric_precision_radix. For all other data types, this column is null.
-  numeric_precision: CardinalNumber;
-  // If data_type identifies a numeric type, this column indicates in which base the values in the columns numeric_precision and numeric_scale are expressed. The value is either 2 or 10. For all other data types, this column is null.
-  numeric_precision_radix: CardinalNumber;
-  // If data_type identifies an exact numeric type, this column contains the (declared or implicit) scale of the type for this column. The scale indicates the number of significant digits to the right of the decimal point. It can be expressed in decimal (base 10) or binary (base 2) terms, as specified in the column numeric_precision_radix. For all other data types, this column is null.
-  numeric_scale: CardinalNumber;
-  // If data_type identifies a date, time, timestamp, or interval type, this column contains the (declared or implicit) fractional seconds precision of the type for this column, that is, the number of decimal digits maintained following the decimal point in the seconds value. For all other data types, this column is null.
-  datetime_precision: CardinalNumber;
-  // If data_type identifies an interval type, this column contains the specification which fields the intervals include for this column, e.g., YEAR TO MONTH, DAY TO SECOND, etc. If no field restrictions were specified (that is, the interval accepts all fields), and for all other data types, this field is null.
-  interval_type: CharacterData;
-  // Applies to a feature not available in PostgreSQL (see datetime_precision for the fractional seconds precision of interval type columns)
-  interval_precision: CardinalNumber;
-  // Applies to a feature not available in PostgreSQL
-  character_set_catalog: SqlIdentifier;
-  // Applies to a feature not available in PostgreSQL
-  character_set_schema: SqlIdentifier;
-  // Applies to a feature not available in PostgreSQL
-  character_set_name: SqlIdentifier;
-  // Name of the database containing the collation of the column (always the current database), null if default or the data type of the column is not collatable
-  collation_catalog: SqlIdentifier;
-  // Name of the schema containing the collation of the column, null if default or the data type of the column is not collatable
-  collation_schema: SqlIdentifier;
-  // Name of the collation of the column, null if default or the data type of the column is not collatable
-  collation_name: SqlIdentifier;
-  // If the column has a domain type, the name of the database that the domain is defined in (always the current database), else null.
-  domain_catalog: SqlIdentifier;
-  // If the column has a domain type, the name of the schema that the domain is defined in, else null.
-  domain_schema: SqlIdentifier;
-  // If the column has a domain type, the name of the domain, else null.
-  domain_name: SqlIdentifier;
-  // Name of the database that the column data type (the underlying type of the domain, if applicable) is defined in (always the current database)
-  udt_catalog: SqlIdentifier;
-  // Name of the schema that the column data type (the underlying type of
-  // the domain, if applicable) is defined in
-  udt_schema: SqlIdentifier;
   // Name of the column data type (the underlying type of the domain, if applicable)
   udt_name: SqlIdentifier;
-  // Applies to a feature not available in PostgreSQL
-  scope_catalog: SqlIdentifier;
-  // Applies to a feature not available in PostgreSQL
-  scope_schema: SqlIdentifier;
-  // Applies to a feature not available in PostgreSQL
-  scope_name: SqlIdentifier;
-  // Always null, because arrays always have unlimited maximum cardinality in PostgreSQL
-  maximum_cardinality: CardinalNumber;
-  // An identifier of the data type descriptor of the column, unique among the data type descriptors pertaining to the table. This is mainly useful for joining with other instances of such identifiers. (The specific format of the identifier is not defined and not guaranteed to remain the same in future versions.)
-  dtd_identifier: SqlIdentifier;
-  // Applies to a feature not available in PostgreSQL
-  is_self_referencing: YesNo;
-  // If the column is an identity column, then YES, else NO.
-  is_identity: YesNo;
-  // If the column is an identity column, then ALWAYS or BY DEFAULT, reflecting the definition of the column.
-  identity_generation: CharacterData;
-  // If the column is an identity column, then the start value of the internal sequence, else null.
-  identity_start: CharacterData;
-  // If the column is an identity column, then the increment of the internal sequence, else null.
-  identity_increment: CharacterData;
-  // If the column is an identity column, then the maximum value of the internal sequence, else null.
-  identity_maximum: CharacterData;
-  // If the column is an identity column, then the minimum value of the internal sequence, else null.
-  identity_minimum: CharacterData;
-  // If the column is an identity column, then YES if the internal sequence cycles or NO if it does not; otherwise null.
-  identity_cycle: YesNo;
-  // Applies to a feature not available in PostgreSQL
-  is_generated: CharacterData;
-  // Applies to a feature not available in PostgreSQL
-  generation_expression: CharacterData;
-  // YES if the column is updatable, NO if not (Columns in base tables are always updatable, columns in views not necessarily)
-  is_updatable: YesNo;
 };
 
 type Column = {
@@ -109,61 +32,49 @@ type Column = {
   isNullable: boolean;
   isArray: boolean;
   position: CardinalNumber;
+  type: string;
 };
 
-type Table = {
+export type Table = {
   name: string;
   columns: Array<Column>;
   primaryKey: Array<Column>;
 };
 
-type Enum = { name: string; values: Array<string> };
+export type Enum = { name: string; values: Array<string> };
 
 type Mappings = { [tableColumn: string]: string };
 
-export default function generateDbTypes() {
+export default async function generateDbTypes() {
   const knex = initKnex();
+  const tables = await getTables(knex);
+  const enums = await getEnums(knex, tables);
+  const mappings = await getEnumsMapping(knex, enums);
 
-  return getTables(knex)
-    .then((tables) => {
-      return getEnums(knex, tables).then((enums) => {
-        return { tables: tables, enums: enums };
-      });
-    })
-    .then(({ tables, enums }) => {
-      return getEnumsMapping(knex, enums).then((mappings) => ({
-        tables: tables,
-        enums: enums,
-        mappings: mappings,
-      }));
-    })
-    .then(({ tables, enums, mappings }) => {
-      const files = tables.filter((t) => !isEnumTable(t.columns)).map((t) => ({
-        file: `dao/${t.name}Dao.ts`,
-        content: generateDao(t, mappings),
-      }));
+  const files = tables.filter((t) => !isEnumTable(t.columns)).map((t) => ({
+    file: `dao/${t.name}Dao.ts`,
+    content: generateDao(t, mappings),
+  }));
 
-      files.push({
-        file: 'types.db.ts',
-        content: generateTypes({ tables, enums, mappings }),
-      });
+  files.push({
+    file: 'types.db.ts',
+    content: generateTypes({ tables, enums, mappings }),
+  });
 
-      files.push({
-        file: 'knex.ts',
-        content: generateKnex(),
-      });
+  files.push({
+    file: 'knex.ts',
+    content: generateKnex(),
+  });
 
-      return files;
-    })
-    .then((files) => {
-      try {
-        fs.mkdirSync(`./src/db/dao`);
-      } catch (e) {}
-      files.forEach(({ file, content }) => {
-        fs.writeFileSync(`./src/db/${file}`, content);
-      });
-    })
-    .then(knex.destroy);
+  try {
+    fs.mkdirSync(`./src/db/dao`);
+  } catch (e) {}
+  files.forEach(({ file, content }) => {
+    fs.writeFileSync(`./src/db/${file}`, content);
+  });
+
+  knex.destroy();
+  return tables;
 }
 
 function initKnex() {
@@ -194,6 +105,7 @@ function getTables(knex: Knex) {
         isNullable: row.is_nullable === 'YES',
         isArray: row.data_type === 'ARRAY',
         position: row.ordinal_position,
+        type: '',
       });
       return tables;
     }, {})
@@ -318,7 +230,11 @@ function generateTable(table: Table, mappings: Mappings): string {
 export interface ${getTableType(table.name)} {
   ${table.columns
     .sort(comparePosition)
-    .map((c) => `${c.name}: ${toTypeScriptType(table.name, c, mappings)};`)
+    .map((c) => {
+      const tsType = toTypeScriptType(table.name, c, mappings);
+      c.type = tsType;
+      return `${c.name}: ${tsType};`;
+    })
     .join('\n  ')}
 }
   `.trim();

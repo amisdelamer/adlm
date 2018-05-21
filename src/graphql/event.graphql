@@ -1,10 +1,10 @@
 # type Event {
 #   id: ID!
 #   creatorId: ID!
-#   createdAt: DateTime!
-#   from: DateTime!
-#   to: DateTime!
-#   chargedAt: DateTime
+#   createdAt: DateIso!
+#   from: DateIso!
+#   to: DateIso!
+#   chargedAt: DateIso
 #   withCarpooling: Boolean!
 # }
 
@@ -18,7 +18,7 @@
 # type Activity {
 #   id: ID!
 #   eventId: ID!
-#   at: DateTime!
+#   at: DateIso!
 #   price: Float!
 #   description: String!
 #   cancelled: Boolean!
@@ -32,7 +32,7 @@
 # type Task {
 #   id: ID!
 #   name: String!
-#   at: DateTime!
+#   at: DateIso!
 #   description: String!
 #   locationId: ID
 #   needsDriver: Boolean!

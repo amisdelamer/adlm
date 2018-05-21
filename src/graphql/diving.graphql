@@ -29,7 +29,7 @@ type DivingSession {
   id: ID!
   spot: DivingSpot!
   director: DivingSessionDirector!
-  at: DateTime!
+  at: DateIso!
   price: Float!
   kind: DivingSessionKind!
 }
@@ -51,8 +51,8 @@ type DivingTeam {
   kind: DivingTeamKind!
   maxTime: Int!
   maxDepth: Int!
-  startedAt: DateTime
-  endedAt: DateTime
+  startedAt: DateIso
+  endedAt: DateIso
   measuredTime: Int
   measuredMaxDepth: Int
   stops: [DecompressionStop!]!

@@ -1,4 +1,4 @@
-scalar DateTime
+scalar DateIso
 scalar Uuid
 
 schema {

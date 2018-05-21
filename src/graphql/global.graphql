@@ -9,17 +9,17 @@ type Location {
 type File {
   id: ID!
   creator: User!
-  createdAt: DateTime!
+  createdAt: DateIso!
   name: String!
   path: String!
-  kind: String!
+  mime: String!
   size: Int!
 }
 
 interface Bill {
   id: ID!
   creator: User!
-  createdAt: DateTime!
+  createdAt: DateIso!
   target: User!
   amount: Float!
   note: String
@@ -28,7 +28,7 @@ interface Bill {
 # type BasicBill implements Bill {
 #   id: ID!
 #   creator: User!
-#   createdAt: DateTime!
+#   createdAt: DateIso!
 #   target: User!
 #   amount: Float!
 #   note: String
@@ -37,7 +37,7 @@ interface Bill {
 # type EventBill implements Bill {
 #   id: ID!
 #   creator: User!
-#   createdAt: DateTime!
+#   createdAt: DateIso!
 #   target: User!
 #   amount: Float!
 #   note: String
@@ -47,7 +47,7 @@ interface Bill {
 # type ActivityBill implements Bill {
 #   id: ID!
 #   creator: User!
-#   createdAt: DateTime!
+#   createdAt: DateIso!
 #   target: User!
 #   amount: Float!
 #   note: String
@@ -57,7 +57,7 @@ interface Bill {
 # type DivingBill implements Bill {
 #   id: ID!
 #   creator: User!
-#   createdAt: DateTime!
+#   createdAt: DateIso!
 #   target: User!
 #   amount: Float!
 #   note: String

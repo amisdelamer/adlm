@@ -29,6 +29,6 @@
 #   userId: ID!
 #   formationId: ID!
 #   creatorId: ID!
-#   createdAt: DateTime!
+#   createdAt: DateIso!
 #   value: String!
 # }

@@ -9,7 +9,7 @@ type User {
   avatar: File
   licenseNumber: String
   license: File
-  birthdate: DateTime!
+  birthdate: DateIso!
   birthplace: String!
   addressStreet: String!
   addressZipcode: String!
@@ -19,7 +19,7 @@ type User {
   deleteMedicalRecord: Boolean!
   isAspirinAllergic: Boolean!
   medicalCertificate: File
-  medicalCertificateExpiresAt: DateTime
+  medicalCertificateExpiresAt: DateIso
   insurance: Insurance
   insuranceFile: File
   parentalPermissionFile: File
@@ -37,7 +37,7 @@ type User {
 
 type AcquiredLevel {
   level: Level!
-  obtainedAt: DateTime!
+  obtainedAt: DateIso!
   tempFile: File
   file: File
 }
@@ -72,11 +72,6 @@ extend type Query {
   user(id: ID): User
 }
 
-input LoginInput {
-  email: String!
-  password: String!
-}
-
 extend type Mutation {
-  login(args: LoginInput!): User
+  login(email: String!, password: String!): User
 }
